@@ -1,6 +1,9 @@
 package tui
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/ValeryCherneykin/forge/internal/templates"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -36,7 +39,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor++
 			}
 		case "enter", "p":
-			// TODO: copy templates
+			if len(m.templates) > 0 {
+				if err := templates.CopyTemplates(m.templates[m.cursor]); err != nil {
+					fmt.Fprintf(os.Stderr, "error: %v\n", err)
+				} else {
+					fmt.Printf("Шаблон %s скопирован\n", m.templates[m.cursor])
+				}
+				return m, tea.Quit
+			}
 		}
 	}
 	return m, nil
