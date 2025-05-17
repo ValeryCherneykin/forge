@@ -2,10 +2,11 @@ package tui
 
 import (
 	"fmt"
-	"os"
-
+	"github.com/ValeryCherneykin/forge/internal/icons"
 	"github.com/ValeryCherneykin/forge/internal/templates"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"os"
 )
 
 type Model struct {
@@ -14,9 +15,8 @@ type Model struct {
 }
 
 func NewModel() Model {
-	templates := templates.GetTemplates()
 	return Model{
-		templates: templates,
+		templates: templates.GetTemplates(),
 	}
 }
 
@@ -42,9 +42,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(m.templates) > 0 {
 				if err := templates.CopyTemplates(m.templates[m.cursor]); err != nil {
 					fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				} else {
-					fmt.Printf("Шаблон %s скопирован\n", m.templates[m.cursor])
+					os.Exit(1)
 				}
+				fmt.Println(m.templates[m.cursor])
 				return m, tea.Quit
 			}
 		}
@@ -53,18 +53,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	s := "Forge \n\n"
+	s := "Forge: Шаблонизатор\n\n"
 	if len(m.templates) == 0 {
-		s += "None found in ~/.forge/templates/."
+		s += "None ~/.forge/templates/."
 	} else {
 		for i, template := range m.templates {
 			cursor := "  "
 			if m.cursor == i {
-				cursor = "➜ "
+				cursor = "❯ "
 			}
-			s += cursor + template + "\n"
+			icon := icons.GetIcon(template)
+			style := lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#c0caf5"))
+			iconStyle := lipgloss.NewStyle().
+				Foreground(lipgloss.Color(icon.Color))
+			if m.cursor == i {
+				style = style.Bold(true).Foreground(lipgloss.Color("#7aa2f7"))
+			}
+			s += style.Render(cursor+iconStyle.Render(icon.Symbol)+" "+template) + "\n"
 		}
 	}
-	s += "\nq — exit, j/k — up/down"
-	return s
+	s += "\nq — выход, j/k — навигация, enter/p — выбрать"
+
+	style := lipgloss.NewStyle().
+		Padding(2, 4).
+		Foreground(lipgloss.Color("#c0caf5")).
+		Background(lipgloss.Color("#1a1b26")).
+		Border(lipgloss.RoundedBorder(), true).
+		BorderForeground(lipgloss.Color("#7aa2f7"))
+
+	return style.Render(s)
 }
