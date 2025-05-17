@@ -1,6 +1,8 @@
 package icons
 
-import "strings"
+import (
+	"strings"
+)
 
 type Icon struct {
 	Symbol string
@@ -30,10 +32,16 @@ var defaultIcon = Icon{Symbol: "\uf15b", Color: "#a6accd"}
 
 func GetIcon(filename string) Icon {
 	filename = strings.ToLower(filename)
+
+	if icon, exists := iconMap[filename]; exists {
+		return icon
+	}
+
 	for ext, icon := range iconMap {
-		if filename == ext || strings.HasSuffix(filename, ext) {
+		if strings.HasSuffix(filename, ext) {
 			return icon
 		}
 	}
+
 	return defaultIcon
 }

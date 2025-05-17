@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -9,7 +10,11 @@ import (
 )
 
 func main() {
-	p := tea.NewProgram(tui.NewModel(), tea.WithAltScreen())
+	templateDir := flag.String("dir", "", "Custom template directory")
+	flag.Parse()
+
+	model := tui.NewModel(*templateDir)
+	p := tea.NewProgram(model, tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
